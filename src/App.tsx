@@ -1,12 +1,17 @@
 import { useMemo, useState } from 'react'
 import { categories } from './data'
 import PriceCard from './components/PriceCard'
+import Calculator from './components/Calculator'
+import { newLine, summarize, type CartLine } from './cart'
+import { formatRupiah } from './hooks'
 
 const ALL = 'semua'
 
 export default function App() {
   const [active, setActive] = useState<string>(ALL)
   const [longSleeve, setLongSleeve] = useState(false)
+  const [lines, setLines] = useState<CartLine[]>(() => [newLine()])
+  const cart = summarize(lines)
 
   const visible = useMemo(
     () => (active === ALL ? categories : categories.filter((c) => c.id === active)),
@@ -47,17 +52,28 @@ export default function App() {
           ))}
         </div>
 
-        <label className="switch">
-          <input
-            type="checkbox"
-            checked={longSleeve}
-            onChange={(e) => setLongSleeve(e.target.checked)}
-          />
-          <span className="switch__track" aria-hidden="true">
-            <span className="switch__thumb" />
-          </span>
-          <span className="switch__label">Lengan panjang</span>
-        </label>
+        <div className="toolbar__right">
+          <label className="switch">
+            <input
+              type="checkbox"
+              checked={longSleeve}
+              onChange={(e) => setLongSleeve(e.target.checked)}
+            />
+            <span className="switch__track" aria-hidden="true">
+              <span className="switch__thumb" />
+            </span>
+            <span className="switch__label">Lengan panjang</span>
+          </label>
+
+          <a href="#hitung" className="cartlink">
+            Hitung belanja
+            {cart.pcs > 0 && (
+              <span className="cartlink__sum">
+                {cart.pcs} pcs · Rp {formatRupiah(cart.total)}
+              </span>
+            )}
+          </a>
+        </div>
       </div>
 
       <main className="grid">
@@ -65,6 +81,8 @@ export default function App() {
           <PriceCard key={c.id} category={c} longSleeve={longSleeve} index={i} />
         ))}
       </main>
+
+      <Calculator lines={lines} setLines={setLines} />
 
       <footer className="page__foot">
         Harga dapat berubah sewaktu-waktu. Hubungi kami untuk konfirmasi stok dan warna.
